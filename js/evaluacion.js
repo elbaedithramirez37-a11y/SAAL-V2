@@ -7,7 +7,6 @@ let puntajesActuales = {
     comprension: 0
 };
 
-// URL del formulario (sin el /viewform al final)
 const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdM80NNKROg-v-mIxP3STO0Ax21anhCKaxF_0WcGlEwT7NAzg/formResponse";
 
 function seleccionarNivel(componente, nivel) {
@@ -80,16 +79,13 @@ function verificarComprension(grado) {
     return nivelComprension;
 }
 
-// Función para enviar datos al formulario de Google con los IDs correctos
 function enviarDatosACEMEJ(grado, cct, zonaEscolar, puntajeTotal) {
-    // Crear un formulario oculto
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = FORM_URL;
-    form.target = '_blank'; // Se abre en nueva pestaña para confirmar
+    form.target = '_blank';
     form.style.display = 'none';
     
-    // Función para agregar campos
     function addField(id, value) {
         const input = document.createElement('input');
         input.type = 'hidden';
@@ -98,25 +94,23 @@ function enviarDatosACEMEJ(grado, cct, zonaEscolar, puntajeTotal) {
         form.appendChild(input);
     }
     
-    // Agregar los campos con los IDs correctos de tu formulario
-    addField('entry.2103818129', new Date().toLocaleDateString('es-MX')); // Fecha
-    addField('entry.1304544216', cct); // CCT
-    addField('entry.773238804', zonaEscolar); // Zona escolar
-    addField('entry.2133955033', grado + '° grado'); // Grado
-    addField('entry.1643008972', puntajeTotal.toString()); // Puntaje total
-    addField('entry.1808190209', puntajesActuales.fluidez.toString()); // Fluidez
-    addField('entry.747946305', puntajesActuales.precision.toString()); // Precisión
-    addField('entry.326947752', puntajesActuales.atencionPalabras.toString()); // Atención
-    addField('entry.1067839395', puntajesActuales.usoVoz.toString()); // Uso de voz
-    addField('entry.1325415441', puntajesActuales.seguridad.toString()); // Seguridad
-    addField('entry.1689114923', puntajesActuales.comprension.toString()); // Comprensión
+    addField('entry.2103818129', new Date().toLocaleDateString('es-MX'));
+    addField('entry.1304544216', cct);
+    addField('entry.773238804', zonaEscolar);
+    addField('entry.2133955033', grado + '° grado');
+    addField('entry.1643008972', puntajeTotal.toString());
+    addField('entry.1808190209', puntajesActuales.fluidez.toString());
+    addField('entry.747946305', puntajesActuales.precision.toString());
+    addField('entry.326947752', puntajesActuales.atencionPalabras.toString());
+    addField('entry.1067839395', puntajesActuales.usoVoz.toString());
+    addField('entry.1325415441', puntajesActuales.seguridad.toString());
+    addField('entry.1689114923', puntajesActuales.comprension.toString());
     
-    // Enviar el formulario
     document.body.appendChild(form);
     form.submit();
     document.body.removeChild(form);
     
-    console.log("Formulario enviado a CEMEJ");
+    alert("✅ Datos enviados a CEMEJ. Se abrirá una ventana de confirmación.");
 }
 
 function generarFicha(nombreAlumno, grado) {
@@ -125,7 +119,6 @@ function generarFicha(nombreAlumno, grado) {
         return;
     }
     
-    // Solicitar datos de la escuela
     let cct = prompt("Ingresa el CCT de la escuela (ejemplo: 14DPR1234A):");
     if (!cct || cct.trim() === "") {
         alert("El CCT es necesario para el registro.");
@@ -146,11 +139,7 @@ function generarFicha(nombreAlumno, grado) {
     
     let nivelTexto = document.getElementById("nivel-general").innerText;
     
-    // Enviar datos a CEMEJ (se abrirá una nueva pestaña con el formulario)
     enviarDatosACEMEJ(grado, cct, zonaEscolar, total);
-    
-    // Mostrar mensaje de confirmación
-    alert("Los datos han sido enviados a CEMEJ. Se abrirá una nueva pestaña. Puedes cerrarla después de ver 'Respuesta enviada'.");
     
     let recomendaciones = "";
     if (puntajesActuales.fluidez <= 1) recomendaciones += "<li>🔴 Fluidez: " + recomendacionesPorComponente.fluidez + "</li>";
@@ -187,7 +176,6 @@ function generarFicha(nombreAlumno, grado) {
             <ul>${recomendaciones}</ul>
             <hr>
             <p style="font-size: 0.8rem;">SAAL: Sistema de Alerta y Acompañamiento LEO - Jalisco</p>
-            <p style="font-size: 0.7rem;">Esta ficha es un diagnóstico, no una calificación definitiva.</p>
             <p style="font-size: 0.7rem;">Versión 2.0 - Con apoyos visuales</p>
         </div>
     `;

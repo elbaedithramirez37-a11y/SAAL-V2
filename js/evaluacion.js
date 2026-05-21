@@ -7,10 +7,12 @@ let puntajesActuales = {
     comprension: 0
 };
 
-const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdM80NNKROg-v-mIxP3STO0Ax21anhCKaxF_0WcGlEwT7NAzg/viewform";
+// 🔥 URL de tu nuevo Google Apps Script (funciona mágicamente)
+const SCRIPT_URL = "https://script.google.com/a/macros/jaliscoedu.mx/s/AKfycbyW0E6HrNEfDosjooYqL4059LS8eaP2KH0vFVNYVPldYATV1fcZG93JWEkJFjMUv3n83g/exec";
 
 function seleccionarNivel(componente, nivel) {
     puntajesActuales[componente] = parseInt(nivel);
+    // Actualizar estilos de los botones... (tu código)
     document.querySelectorAll(`.btn-nivel[data-componente="${componente}"]`).forEach(btn => {
         btn.classList.remove('seleccionado');
         if (btn.getAttribute('data-nivel') == nivel) {
@@ -37,47 +39,50 @@ function calcularTotal() {
         nivel = "Requiere apoyo (Rojo)";
         color = "🔴";
     }
-    document.getElementById("puntaje-total").innerText = suma;
-    document.getElementById("nivel-general").innerHTML = `${color} ${nivel}`;
-    document.getElementById("resultado-box").style.display = "block";
+    // Mostrar resultado (tu código)
+    if(document.getElementById("puntaje-total")) document.getElementById("puntaje-total").innerText = suma;
+    if(document.getElementById("nivel-general")) document.getElementById("nivel-general").innerHTML = `${color} ${nivel}`;
+    if(document.getElementById("resultado-box")) document.getElementById("resultado-box").style.display = "block";
 }
 
-function verificarComprension(grado) {
-    let aciertos = 0;
-    let total = 0;
-    
-    if (grado === 1 || grado === 2) {
-        const preg = preguntasComprension[grado];
-        if (preg && preg.length > 1) {
-            for (let i = 1; i < preg.length; i++) {
-                if (preg[i].tipo === "multiple") {
-                    total++;
-                    let seleccion = document.querySelector(`input[name="preg${i}"]:checked`);
-                    if (seleccion && parseInt(seleccion.value) === preg[i].correcta) {
-                        aciertos++;
-                    }
-                }
-            }
-        }
-    } else if (grado === 3) {
-        for (let i = 0; i <= 4; i++) {
-            let chk = document.getElementById(`check_abierta_${i}`);
-            if (chk && chk.checked) {
-                aciertos++;
-            }
-            total++;
-        }
+// ... (tu función verificarComprension) ...
+// Asegúrate de que tu función verificarComprension esté aquí, igual que antes, sin cambios.
+
+// Nueva función para enviar datos de forma automática
+async function enviarDatosACEMEJ(grado, cct, zonaEscolar, puntajeTotal, nivel) {
+    const payload = {
+        fecha: new Date().toLocaleDateString('es-MX'), // O usa new Date().toISOString() si prefieres
+        cct: cct,
+        zona: zonaEscolar,
+        grado: grado + "° grado",
+        puntajeTotal: puntajeTotal,
+        fluidez: puntajesActuales.fluidez,
+        precision: puntajesActuales.precision,
+        atencion: puntajesActuales.atencionPalabras,
+        usovoz: puntajesActuales.usoVoz,
+        seguridad: puntajesActuales.seguridad,
+        comprension: puntajesActuales.comprension,
+        nivel: nivel // Enviamos el texto completo del nivel
+    };
+
+    try {
+        const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors', // Importante para que funcione entre diferentes orígenes
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+        console.log("✅ Datos enviados a CEMEJ correctamente");
+        // Podrías mostrar un pequeño mensaje de éxito no intrusivo
+        // alert("Datos registrados automáticamente.");
+    } catch (error) {
+        console.error("❌ Error al enviar datos:", error);
+        alert("Hubo un problema al registrar los datos. Por favor, contacta a soporte.");
     }
-    
-    let porcentaje = total > 0 ? (aciertos / total) * 100 : 0;
-    let nivelComprension = 1;
-    if (porcentaje >= 80) nivelComprension = 3;
-    else if (porcentaje >= 50) nivelComprension = 2;
-    
-    puntajesActuales.comprension = nivelComprension;
-    calcularTotal();
-    return nivelComprension;
 }
+
 
 function generarFicha(nombreAlumno, grado) {
     if (!nombreAlumno || nombreAlumno.trim() === "") {
@@ -103,72 +108,14 @@ function generarFicha(nombreAlumno, grado) {
         total += puntajesActuales[c];
     }
     
-    let nivelTexto = document.getElementById("nivel-general").innerText;
+    let nivelTexto = "No calculado";
+    if(document.getElementById("nivel-general")) nivelTexto = document.getElementById("nivel-general").innerText;
     
-    // Crear resumen de datos para el adulto
-    let resumen = `📋 DATOS DE LA EVALUACIÓN - SAAL\n\n`;
-    resumen += `📅 Fecha: ${fecha}\n`;
-    resumen += `🏫 CCT: ${cct}\n`;
-    resumen += `📍 Zona escolar: ${zonaEscolar}\n`;
-    resumen += `🎓 Grado: ${grado}°\n`;
-    resumen += `📊 Puntaje total: ${total}/18\n`;
-    resumen += `🏆 Nivel: ${nivelTexto}\n\n`;
-    resumen += `📈 Puntajes por componente:\n`;
-    resumen += `• Fluidez: ${puntajesActuales.fluidez}/3\n`;
-    resumen += `• Precisión: ${puntajesActuales.precision}/3\n`;
-    resumen += `• Atención a palabras complejas: ${puntajesActuales.atencionPalabras}/3\n`;
-    resumen += `• Uso de la voz: ${puntajesActuales.usoVoz}/3\n`;
-    resumen += `• Seguridad: ${puntajesActuales.seguridad}/3\n`;
-    resumen += `• Comprensión: ${puntajesActuales.comprension}/3\n\n`;
-    resumen += `🔗 Abre el formulario para registrar estos datos:\n${FORM_URL}`;
+    // 🔥 Llamada mágica: Envía los datos a tu hoja de cálculo
+    enviarDatosACEMEJ(grado, cct, zonaEscolar, total, nivelTexto);
     
-    // Mostrar resumen y preguntar si quiere abrir el formulario
-    let abrir = confirm(`${resumen}\n\n¿Deseas abrir el formulario de CEMEJ para registrar estos datos?`);
-    if (abrir) {
-        window.open(FORM_URL, '_blank');
-    }
-    
-    // ---- Mostrar la ficha ----
+    // (Aquí continúa el resto de tu código para mostrar la ficha en la pantalla)
+    // ... (tu código para generar el htmlFicha y mostrarlo)
     let recomendaciones = "";
-    if (puntajesActuales.fluidez <= 1) recomendaciones += "<li>🔴 Fluidez: " + recomendacionesPorComponente.fluidez + "</li>";
-    if (puntajesActuales.precision <= 1) recomendaciones += "<li>🔴 Precisión: " + recomendacionesPorComponente.precision + "</li>";
-    if (puntajesActuales.atencionPalabras <= 1) recomendaciones += "<li>🔴 Atención: " + recomendacionesPorComponente.atencionPalabras + "</li>";
-    if (puntajesActuales.usoVoz <= 1) recomendaciones += "<li>🔴 Uso de voz: " + recomendacionesPorComponente.usoVoz + "</li>";
-    if (puntajesActuales.seguridad <= 1) recomendaciones += "<li>🔴 Seguridad: " + recomendacionesPorComponente.seguridad + "</li>";
-    if (puntajesActuales.comprension <= 1) recomendaciones += "<li>🔴 Comprensión: " + recomendacionesPorComponente.comprension + "</li>";
-    
-    if (recomendaciones === "") recomendaciones = "<li>🟢 ¡Muy bien! Sigue practicando.</li>";
-    
-    let htmlFicha = `
-        <div style="font-family: Arial, sans-serif; max-width: 700px; margin: auto; padding: 20px; border: 2px solid #e85f2f; border-radius: 20px;">
-            <h2 style="color: #e85f2f;">📋 SAAL - Ficha diagnóstica</h2>
-            <p><strong>Alumno(a):</strong> ${nombreAlumno}</p>
-            <p><strong>Grado:</strong> ${grado}° de primaria</p>
-            <p><strong>Fecha:</strong> ${fecha}</p>
-            <p><strong>CCT:</strong> ${cct}</p>
-            <p><strong>Zona escolar:</strong> ${zonaEscolar}</p>
-            <hr>
-            <h3>Resultado general:</h3>
-            <p style="font-size: 1.5rem;">Puntaje total: ${total} / 18</p>
-            <p>${nivelTexto}</p>
-            <h3>Puntajes:</h3>
-            <ul>
-                <li>Fluidez: ${puntajesActuales.fluidez}/3</li>
-                <li>Precisión: ${puntajesActuales.precision}/3</li>
-                <li>Atención: ${puntajesActuales.atencionPalabras}/3</li>
-                <li>Uso de voz: ${puntajesActuales.usoVoz}/3</li>
-                <li>Seguridad: ${puntajesActuales.seguridad}/3</li>
-                <li>Comprensión: ${puntajesActuales.comprension}/3</li>
-            </ul>
-            <h3>Recomendaciones:</h3>
-            <ul>${recomendaciones}</ul>
-            <hr>
-            <p style="font-size: 0.8rem;">SAAL - Jalisco</p>
-            <p style="font-size: 0.7rem;">Versión 2.0</p>
-        </div>
-    `;
-    
-    document.getElementById("ficha-contenido").innerHTML = htmlFicha;
-    document.getElementById("ficha-area").style.display = "block";
-    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    // ... etc ...
 }

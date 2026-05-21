@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAAL V2 - Evaluar 2° grado</title>
+    <link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+<div class="container">
+    <a href="index.html" class="boton-regresar">← Menú principal</a>
+    <div class="header">
+        <div class="logos">
+            <img src="assets/cemej.png" alt="CEMEJ" class="logo-cemej" onerror="this.style.display='none'">
+        </div>
+        <h1>📖 SAAL: Sistema de Alerta y Acompañamiento LEO</h1>
+        <p>Evaluación de lectura para 2o grado</p>
+        <p class="version">Versión 2.0 - Con apoyos visuales</p>
+    </div>
+
+    <label>Nombre del alumno: 
+        <input type="text" id="nombreAlumno" placeholder="Escribe el nombre completo" style="width:100%; padding:8px; margin:10px 0;">
+    </label>
+
+    <div class="texto-lectura" id="textoLectura"></div>
+
+    <h3>🔍 Evalúa cada componente mientras el niño lee:</h3>
+    <div id="componentes"></div>
+
+    <h3>📝 Preguntas de comprensión</h3>
+    <div id="preguntas"></div>
+
+    <button class="boton-calcular" id="btnCalcular">✅ Calificar comprensión y ver resultado</button>
+
+    <div id="resultado-box" style="display:none;" class="resultado-final">
+        <p>Puntaje total: <strong id="puntaje-total"></strong> / 18</p>
+        <p id="nivel-general"></p>
+        <button class="boton-ficha" id="btnGenerarFicha">📄 Generar ficha diagnóstica</button>
+    </div>
+
+    <div id="ficha-area" style="display:none;" class="ficha-diagnostico">
+        <div id="ficha-contenido"></div>
+        <button onclick="window.print();" class="boton-ficha">🖨️ Guardar como PDF / Imprimir</button>
+    </div>
+</div>
+
+<script src="js/datos.js"></script>
+<script src="js/evaluacion.js"></script>
+<script>
+    const grado = 2;
+    document.getElementById("textoLectura").innerText = textos[grado];
+
+    const componentes = ["fluidez", "precision", "atencionPalabras", "usoVoz", "seguridad"];
+    
+    let htmlComp = "";
+    componentes.forEach(comp => {
+        let nombreMostrar = comp.charAt(0).toUpperCase() + comp.slice(1);
+        if (comp === "atencionPalabras") nombreMostrar = "Atención a palabras complejas";
+        if (comp === "usoVoz") nombreMostrar = "Uso de la voz";
+        
+        htmlComp += `
+            <div class="componente" id="comp-${comp}">
+                <h3>${nombreMostrar}</h3>
+                <div class="botones-nivel">
+                    <button class="btn-nivel" data-componente="${comp}" data-nivel="3">✅ Logrado</button>
+                    <button class="btn-nivel" data-componente="${comp}" data-nivel="2">🟡 En proceso</button>
+                    <button class="btn-nivel" data-componente="${comp}" data-nivel="1">🔴 Requiere apoyo</button>
+                </div>
+                <div class="descripcion-nivel" id="desc-${comp}">
+                    <span>📘 Selecciona un nivel para ver la descripción</span>
+                </div>
+            </div>
+        `;
+    });
+    document.getElementById("componentes").innerHTML = htmlComp;
+
+    const preg = preguntasComprension[grado];
+    let htmlPreg = "";
+    for (let i = 0; i < preg.length; i++) {
+        if (preg[i].tipo === "abierta") {
+            htmlPreg += `<div class="pregunta"><p><strong>${preg[i].texto}</strong></p>
+            <textarea rows="2" style="width:100%" id="abierta_${i}" placeholder="Respuesta del niño..."></textarea>
+            <label><input type="checkbox" id="check_abierta_${i}"> Marcar como correcta (evaluación del adulto)</label>
+            </div>`;
+        } else {
+            htmlPreg += `<div class="pregunta"><p><strong>${preg[i].texto}</strong></p>`;
+            preg[i].opciones.forEach((op, idx) => {
+                htmlPreg += `<label><input type="radio" name="preg${i}" value="${idx}"> ${op}</label>`;
+            });
+            htmlPreg += `</div>`;
+        }
+    }
+    document.getElementById("preguntas").innerHTML = htmlPreg;
+
+    document.querySelectorAll(".btn-nivel").forEach(btn => {
+        btn.addEventListener("click", function() {
+            let comp = this.getAttribute("data-componente");
+            let nivel = this.getAttribute("data-nivel");
+            seleccionarNivel(comp, nivel);
+            
+            let descDiv = document.getElementById(`desc-${comp}`);
+            if (descDiv && descripcionesRubrica[comp] && descripcionesRubrica[comp][nivel]) {
+                let nivelTexto = nivel === '3' ? 'Logrado' : (nivel === '2' ? 'En proceso' : 'Requiere apoyo');
+                descDiv.innerHTML = `<span>📘 ${nivelTexto}:</span> ${descripcionesRubrica[comp][nivel]}`;
+            }
+        });
+    });
+
+    document.getElementById("btnCalcular").addEventListener("click", function() {
+        let faltan = false;
+        for (let c of componentes) {
+            if (puntajesActuales[c] === 0) faltan = true;
+        }
+        if (faltan) {
+            alert("Por favor evalúa todos los componentes de lectura (Fluidez, Precisión, Atención, Voz y Seguridad).");
+            return;
+        }
+        verificarComprension(grado);
+    });
+
+    function generarFichaDirecta() {
+        let nombre = document.getElementById("nombreAlumno").value.trim();
+        if (nombre === "") {
+            alert("Escribe el nombre del alumno primero.");
+            return;
+        }
+        generarFicha(nombre, grado);
+    }
+
+    document.getElementById("btnGenerarFicha").addEventListener("click", generarFichaDirecta);
+</script>
+</body>
+</html>

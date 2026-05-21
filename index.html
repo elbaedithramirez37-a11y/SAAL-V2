@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>SAAL V2 - Evaluación de Lectura</title>
+    <link rel="stylesheet" href="css/estilo.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#e85f2f">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logos">
+                <img src="assets/cemej.png" alt="CEMEJ" class="logo-cemej" onerror="this.style.display='none'">
+            </div>
+            <h1>📖 SAAL: Sistema de Alerta y Acompañamiento LEO</h1>
+            <p>Evaluación de lectura para 1o, 2o y 3o de primaria</p>
+            <p class="version">Versión 2.0 - Con apoyos visuales</p>
+        </div>
+
+        <div class="menu-grados">
+            <a href="grado1.html" class="btn-grado">🎓 1° grado</a>
+            <a href="grado2.html" class="btn-grado">🎓 2° grado</a>
+            <a href="grado3.html" class="btn-grado">🎓 3° grado</a>
+        </div>
+
+        <div class="info">
+            <h3>¿Cómo usar la herramienta?</h3>
+            <ol>
+                <li>Selecciona el grado del alumno.</li>
+                <li>El niño lee el texto en voz alta.</li>
+                <li>El adulto (maestro o padre) toca los botones según el desempeño.</li>
+                <li><strong>Cada botón muestra una descripción</strong> de lo que significa ese nivel.</li>
+                <li>Responde las preguntas de comprensión.</li>
+                <li>La app genera una ficha con el resultado y recomendaciones.</li>
+                <li>Puedes guardar la ficha como PDF o imprimirla.</li>
+            </ol>
+        </div>
+    </div>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+            .then(() => console.log('Service Worker registrado'))
+            .catch(err => console.log('Error SW:', err));
+        }
+    </script>
+</body>
+</html>

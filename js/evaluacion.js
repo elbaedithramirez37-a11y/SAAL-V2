@@ -7,7 +7,7 @@ let puntajesActuales = {
     comprension: 0
 };
 
-const FORM_BASE_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdM80NNKROg-v-mIxP3STO0Ax21anhCKaxF_0WcGlEwT7NAzg/viewform";
+const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdM80NNKROg-v-mIxP3STO0Ax21anhCKaxF_0WcGlEwT7NAzg/viewform";
 
 function seleccionarNivel(componente, nivel) {
     puntajesActuales[componente] = parseInt(nivel);
@@ -105,49 +105,43 @@ function generarFicha(nombreAlumno, grado) {
     
     let nivelTexto = document.getElementById("nivel-general").innerText;
     
-    // Crear el resumen de datos para copiar
-    let resumenDatos = `📋 DATOS DE LA EVALUACIÓN SAAL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📅 Fecha: ${fecha}
-🏫 CCT: ${cct}
-📍 Zona escolar: ${zonaEscolar}
-🎓 Grado: ${grado}° grado
-📊 Puntaje total: ${total}/18
-🏆 Nivel: ${nivelTexto}
-
-📈 PUNTAJES POR COMPONENTE:
-• Fluidez: ${puntajesActuales.fluidez}/3
-• Precisión: ${puntajesActuales.precision}/3
-• Atención a palabras complejas: ${puntajesActuales.atencionPalabras}/3
-• Uso de la voz: ${puntajesActuales.usoVoz}/3
-• Seguridad y disposición: ${puntajesActuales.seguridad}/3
-• Comprensión lectora: ${puntajesActuales.comprension}/3
-
-🔗 Para registrar estos datos, abre el formulario:
-${FORM_BASE_URL}`;
+    // Crear resumen de datos para el adulto
+    let resumen = `📋 DATOS DE LA EVALUACIÓN - SAAL\n\n`;
+    resumen += `📅 Fecha: ${fecha}\n`;
+    resumen += `🏫 CCT: ${cct}\n`;
+    resumen += `📍 Zona escolar: ${zonaEscolar}\n`;
+    resumen += `🎓 Grado: ${grado}°\n`;
+    resumen += `📊 Puntaje total: ${total}/18\n`;
+    resumen += `🏆 Nivel: ${nivelTexto}\n\n`;
+    resumen += `📈 Puntajes por componente:\n`;
+    resumen += `• Fluidez: ${puntajesActuales.fluidez}/3\n`;
+    resumen += `• Precisión: ${puntajesActuales.precision}/3\n`;
+    resumen += `• Atención a palabras complejas: ${puntajesActuales.atencionPalabras}/3\n`;
+    resumen += `• Uso de la voz: ${puntajesActuales.usoVoz}/3\n`;
+    resumen += `• Seguridad: ${puntajesActuales.seguridad}/3\n`;
+    resumen += `• Comprensión: ${puntajesActuales.comprension}/3\n\n`;
+    resumen += `🔗 Abre el formulario para registrar estos datos:\n${FORM_URL}`;
     
-    // Mostrar cuadro de diálogo con los datos para copiar
-    const confirmar = confirm(`${resumenDatos}\n\n¿Deseas abrir el formulario de CEMEJ para registrar estos datos?`);
-    
-    if (confirmar) {
-        window.open(FORM_BASE_URL, '_blank');
-        alert("✅ Se abrió el formulario. Copia los datos de arriba (Ctrl+C) y pégalos en los campos correspondientes.");
+    // Mostrar resumen y preguntar si quiere abrir el formulario
+    let abrir = confirm(`${resumen}\n\n¿Deseas abrir el formulario de CEMEJ para registrar estos datos?`);
+    if (abrir) {
+        window.open(FORM_URL, '_blank');
     }
     
-    // ---- Mostrar la ficha en la pantalla ----
+    // ---- Mostrar la ficha ----
     let recomendaciones = "";
     if (puntajesActuales.fluidez <= 1) recomendaciones += "<li>🔴 Fluidez: " + recomendacionesPorComponente.fluidez + "</li>";
     if (puntajesActuales.precision <= 1) recomendaciones += "<li>🔴 Precisión: " + recomendacionesPorComponente.precision + "</li>";
-    if (puntajesActuales.atencionPalabras <= 1) recomendaciones += "<li>🔴 Atención a palabras complejas: " + recomendacionesPorComponente.atencionPalabras + "</li>";
-    if (puntajesActuales.usoVoz <= 1) recomendaciones += "<li>🔴 Uso de la voz: " + recomendacionesPorComponente.usoVoz + "</li>";
-    if (puntajesActuales.seguridad <= 1) recomendaciones += "<li>🔴 Seguridad y disposición: " + recomendacionesPorComponente.seguridad + "</li>";
-    if (puntajesActuales.comprension <= 1) recomendaciones += "<li>🔴 Comprensión lectora: " + recomendacionesPorComponente.comprension + "</li>";
+    if (puntajesActuales.atencionPalabras <= 1) recomendaciones += "<li>🔴 Atención: " + recomendacionesPorComponente.atencionPalabras + "</li>";
+    if (puntajesActuales.usoVoz <= 1) recomendaciones += "<li>🔴 Uso de voz: " + recomendacionesPorComponente.usoVoz + "</li>";
+    if (puntajesActuales.seguridad <= 1) recomendaciones += "<li>🔴 Seguridad: " + recomendacionesPorComponente.seguridad + "</li>";
+    if (puntajesActuales.comprension <= 1) recomendaciones += "<li>🔴 Comprensión: " + recomendacionesPorComponente.comprension + "</li>";
     
-    if (recomendaciones === "") recomendaciones = "<li>🟢 ¡Muy bien! Sigue practicando con lecturas diarias.</li>";
+    if (recomendaciones === "") recomendaciones = "<li>🟢 ¡Muy bien! Sigue practicando.</li>";
     
     let htmlFicha = `
         <div style="font-family: Arial, sans-serif; max-width: 700px; margin: auto; padding: 20px; border: 2px solid #e85f2f; border-radius: 20px;">
-            <h2 style="color: #e85f2f;">📋 SAAL - Ficha diagnóstica de lectura</h2>
+            <h2 style="color: #e85f2f;">📋 SAAL - Ficha diagnóstica</h2>
             <p><strong>Alumno(a):</strong> ${nombreAlumno}</p>
             <p><strong>Grado:</strong> ${grado}° de primaria</p>
             <p><strong>Fecha:</strong> ${fecha}</p>
@@ -157,20 +151,20 @@ ${FORM_BASE_URL}`;
             <h3>Resultado general:</h3>
             <p style="font-size: 1.5rem;">Puntaje total: ${total} / 18</p>
             <p>${nivelTexto}</p>
-            <h3>Puntaje por componente:</h3>
+            <h3>Puntajes:</h3>
             <ul>
                 <li>Fluidez: ${puntajesActuales.fluidez}/3</li>
                 <li>Precisión: ${puntajesActuales.precision}/3</li>
-                <li>Atención a palabras complejas: ${puntajesActuales.atencionPalabras}/3</li>
-                <li>Uso de la voz: ${puntajesActuales.usoVoz}/3</li>
-                <li>Seguridad y disposición: ${puntajesActuales.seguridad}/3</li>
+                <li>Atención: ${puntajesActuales.atencionPalabras}/3</li>
+                <li>Uso de voz: ${puntajesActuales.usoVoz}/3</li>
+                <li>Seguridad: ${puntajesActuales.seguridad}/3</li>
                 <li>Comprensión: ${puntajesActuales.comprension}/3</li>
             </ul>
             <h3>Recomendaciones:</h3>
             <ul>${recomendaciones}</ul>
             <hr>
-            <p style="font-size: 0.8rem;">SAAL: Sistema de Alerta y Acompañamiento LEO - Jalisco</p>
-            <p style="font-size: 0.7rem;">Versión 2.0 - Con apoyos visuales</p>
+            <p style="font-size: 0.8rem;">SAAL - Jalisco</p>
+            <p style="font-size: 0.7rem;">Versión 2.0</p>
         </div>
     `;
     

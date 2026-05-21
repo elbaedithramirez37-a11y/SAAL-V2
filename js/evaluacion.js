@@ -7,7 +7,8 @@ let puntajesActuales = {
     comprension: 0
 };
 
-const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdM80NNKROg-v-mIxP3STO0Ax21anhCKaxF_0WcGlEwT7NAzg/formResponse";
+// La URL BASE de tu formulario (para enviar datos precargados)
+const FORM_BASE_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdM80NNKROg-v-mIxP3STO0Ax21anhCKaxF_0WcGlEwT7NAzg/viewform";
 
 function seleccionarNivel(componente, nivel) {
     puntajesActuales[componente] = parseInt(nivel);
@@ -79,40 +80,6 @@ function verificarComprension(grado) {
     return nivelComprension;
 }
 
-function enviarDatosACEMEJ(grado, cct, zonaEscolar, puntajeTotal) {
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = FORM_URL;
-    form.target = '_blank';
-    form.style.display = 'none';
-    
-    function addField(id, value) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = id;
-        input.value = value;
-        form.appendChild(input);
-    }
-    
-    addField('entry.2103818129', new Date().toLocaleDateString('es-MX'));
-    addField('entry.1304544216', cct);
-    addField('entry.773238804', zonaEscolar);
-    addField('entry.2133955033', grado + '° grado');
-    addField('entry.1643008972', puntajeTotal.toString());
-    addField('entry.1808190209', puntajesActuales.fluidez.toString());
-    addField('entry.747946305', puntajesActuales.precision.toString());
-    addField('entry.326947752', puntajesActuales.atencionPalabras.toString());
-    addField('entry.1067839395', puntajesActuales.usoVoz.toString());
-    addField('entry.1325415441', puntajesActuales.seguridad.toString());
-    addField('entry.1689114923', puntajesActuales.comprension.toString());
-    
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
-    
-    alert("✅ Datos enviados a CEMEJ. Se abrirá una ventana de confirmación.");
-}
-
 function generarFicha(nombreAlumno, grado) {
     if (!nombreAlumno || nombreAlumno.trim() === "") {
         alert("Escribe el nombre del alumno primero.");
@@ -139,8 +106,27 @@ function generarFicha(nombreAlumno, grado) {
     
     let nivelTexto = document.getElementById("nivel-general").innerText;
     
-    enviarDatosACEMEJ(grado, cct, zonaEscolar, total);
+    // ---- Construir la URL del formulario con los datos precargados (GET) ----
+    // Estos son los IDs de las preguntas en TU formulario
+    const params = new URLSearchParams();
+    params.append("entry.2103818129", new Date().toLocaleDateString('es-MX'));  // Fecha
+    params.append("entry.1304544216", cct);                                    // CCT
+    params.append("entry.773238804", zonaEscolar);                             // Zona escolar
+    params.append("entry.2133955033", grado + "° grado");                      // Grado
+    params.append("entry.1643008972", total.toString());                       // Puntaje total
+    params.append("entry.1808190209", puntajesActuales.fluidez.toString());    // Fluidez
+    params.append("entry.747946305", puntajesActuales.precision.toString());   // Precisión
+    params.append("entry.326947752", puntajesActuales.atencionPalabras.toString()); // Atención
+    params.append("entry.1067839395", puntajesActuales.usoVoz.toString());     // Uso de la voz
+    params.append("entry.1325415441", puntajesActuales.seguridad.toString());  // Seguridad
+    params.append("entry.1689114923", puntajesActuales.comprension.toString()); // Comprensión
     
+    const formularioConDatos = `${FORM_BASE_URL}?usp=pp_url&${params.toString()}`;
+    
+    // Abrir el formulario en una nueva pestaña
+    window.open(formularioConDatos, '_blank');
+    
+    // ---- Mostrar la ficha en la pantalla (como ya lo hacías) ----
     let recomendaciones = "";
     if (puntajesActuales.fluidez <= 1) recomendaciones += "<li>🔴 Fluidez: " + recomendacionesPorComponente.fluidez + "</li>";
     if (puntajesActuales.precision <= 1) recomendaciones += "<li>🔴 Precisión: " + recomendacionesPorComponente.precision + "</li>";
@@ -183,4 +169,6 @@ function generarFicha(nombreAlumno, grado) {
     document.getElementById("ficha-contenido").innerHTML = htmlFicha;
     document.getElementById("ficha-area").style.display = "block";
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+    
+    alert("✅ Se abrirá una nueva pestaña con el formulario de CEMEJ. Por favor, revisa los datos y haz clic en 'Enviar'.");
 }
